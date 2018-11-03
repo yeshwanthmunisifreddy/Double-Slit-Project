@@ -28,25 +28,28 @@ import java.io.OutputStream;
 
 
 class Util {
-    static void encodeAndSaveFile(Bitmap photo, Context context,String id) {
+    static void encodeAndSaveFile( Context context,Bitmap photo,String fileName) {
 
         try {
             ContextWrapper contextWrapper = new ContextWrapper(context);
             File directory = contextWrapper.getDir("DoubleSlit", Context.MODE_PRIVATE);
-            File myPath = new File(directory,id);
+            File myPath = new File(directory,fileName);
             KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
             Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
             if (!crypto.isAvailable()) {
                 return;
             }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            OutputStream fileStream = new BufferedOutputStream(
-                    new FileOutputStream(myPath));
-            OutputStream outputStream = crypto.getMacOutputStream(
-                    fileStream,
-                    Entity.create("entity_id"));
-            outputStream.write(bitmapToBytes(photo));
-            outputStream.close();
+            if (!myPath.exists()){
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                OutputStream fileStream = new BufferedOutputStream(
+                        new FileOutputStream(myPath));
+                OutputStream outputStream = crypto.getMacOutputStream(
+                        fileStream,
+                        Entity.create("entity_id"));
+                outputStream.write(bitmapToBytes(photo));
+                outputStream.close();
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (KeyChainException e) {
@@ -61,7 +64,7 @@ class Util {
     private static byte[] bitmapToBytes(Bitmap photo) {
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        photo.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        photo.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
     }
     private  static Bitmap bytesToBitmap(byte[] bytes) {
@@ -75,6 +78,7 @@ class Util {
         ContextWrapper cw = new ContextWrapper(context);
         File directory = cw.getDir("DoubleSlit", Context.MODE_PRIVATE);
         File file = new File(directory, filename);
+
         try {
             FileInputStream fileStream = new FileInputStream(file);
 

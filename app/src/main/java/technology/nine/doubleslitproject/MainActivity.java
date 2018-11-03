@@ -3,6 +3,8 @@ package technology.nine.doubleslitproject;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +28,7 @@ import com.facebook.soloader.SoLoader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     boolean sentToSettings = false;
     Bitmap bmp = null;
     String id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,18 +75,15 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Observer<List<Item>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-
                     }
 
                     @Override
                     public void onNext(List<Item> value) {
-                        Log.e("List", value + "");
                         if (value != null) {
-                            for (int i = 0; i <value.size()-1; i++) {
-                                String Url = value.get(i).getUrls().getFull();
+                            for (int i = 0; i < value.size(); i++) {
+                                String url = value.get(i).getUrls().getFull();
                                 id = value.get(i).getId();
-                                filename = id + "-full" + ".jpg";
-                                new DownloadImageTask().execute(Url);
+                                new DownloadImageTask().execute(url, id);
                             }
 
                         }
@@ -102,10 +103,8 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
-        Bitmap decryptedImage = Util.decodeFile(id ,getApplicationContext());
-        Log.e("ReadedBitmap",decryptedImage+"");
-
     }
+
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -168,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(Manifest.permission.WRITE_EXTERNAL_STORAGE, true);
             editor.apply();
         } else {
-             fetch();
+            fetch();
         }
     }
 
@@ -232,23 +231,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private  class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
+    private class DownloadImageTask extends AsyncTask<String, String, Bitmap> {
 
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            String urldisplay = strings[0];
+            String filename = strings[1];
             try {
                 URL url = new URL(urldisplay);
-                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());;
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
+                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            Log.e("Bitmap",bmp+"");
-            Util.encodeAndSaveFile(bmp,getApplicationContext(),id);
-            return bmp;
-        }
-        protected void onPostExecute(Bitmap result) {
-
+             Util.encodeAndSaveFile(getApplicationContext(), bmp, filename);
+            return  null;
         }
     }
 }
