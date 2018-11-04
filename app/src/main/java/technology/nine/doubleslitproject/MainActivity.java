@@ -1,10 +1,9 @@
 package technology.nine.doubleslitproject;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,20 +13,20 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.facebook.soloader.SoLoader;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -38,16 +37,12 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import technology.nine.doubleslitproject.api.Client;
 import technology.nine.doubleslitproject.api.Service;
+import technology.nine.doubleslitproject.model.Image;
 import technology.nine.doubleslitproject.model.Item;
 
 public class MainActivity extends AppCompatActivity {
-    private enum ActionType {DOWNLOAD}
 
-    private ActionType currentAction;
-    private DownloadManager downloadManager;
-    private long downloadReference;
     AlertDialog alert;
-    Uri uri;
     String filename;
     AlertDialog.Builder builder;
     private SharedPreferences permissionStatus;
@@ -57,14 +52,33 @@ public class MainActivity extends AppCompatActivity {
     Bitmap bmp = null;
     String id;
 
+    RecyclerView recyclerView;
+    ImagesAdapter imagesAdapter;
+
+    private ImageViewModel mImageViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.fragment_image);
+
         //initializing the conceal library
         SoLoader.init(this, false);
         permissionStatus = getSharedPreferences("permissionStatus", MODE_PRIVATE);
         permissions();
+        recyclerView = findViewById(R.id.recycler_view);
+        imagesAdapter = new ImagesAdapter(this);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(imagesAdapter);
+
+        mImageViewModel = ViewModelProviders.of(this).get(ImageViewModel.class);
+        mImageViewModel.getAllImages().observe(this, new android.arch.lifecycle.Observer<List<Image>>() {
+            @Override
+            public void onChanged(@Nullable List<Image> images) {
+                imagesAdapter.setWords(images);
+            }
+        });
+
     }
 
     private void fetch() {
@@ -80,10 +94,15 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onNext(List<Item> value) {
                         if (value != null) {
-                            for (int i = 0; i < value.size(); i++) {
+                            for (int i = 0; i < value.size() - 1; i++) {
                                 String url = value.get(i).getUrls().getFull();
-                                id = value.get(i).getId();
-                                new DownloadImageTask().execute(url, id);
+                                filename = value.get(i).getId();
+                                int width = (int) value.get(i).getWidth();
+                                int height = (int) value.get(i).getHeight();
+                                String color = value.get(i).getColor();
+                                MyTaskParams params = new MyTaskParams(url, filename, width, height, color);
+                                MyTask myTask = new MyTask();
+                                myTask.execute(params);
                             }
 
                         }
@@ -172,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == EXTERNAL_STORAGE_PERMISSION_CONSTANT) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -231,24 +250,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class DownloadImageTask extends AsyncTask<String, String, Bitmap> {
+    private class MyTaskParams {
+        String url;
+        String filename;
+        int width;
+        int height;
+        String color;
 
+        MyTaskParams(String url, String filename, int width, int height, String color) {
+            this.url = url;
+            this.filename = filename;
+            this.width = width;
+            this.height = height;
+            this.color = color;
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private  class MyTask extends AsyncTask<MyTaskParams, Void, Void> {
 
         @Override
-        protected Bitmap doInBackground(String... strings) {
-            String urldisplay = strings[0];
-            String filename = strings[1];
+        protected Void doInBackground(MyTaskParams... myTaskParams) {
+            String urldisplay = myTaskParams[0].url;
+            String filename = myTaskParams[0].filename;
+            int width = myTaskParams[0].width;
+            int height = myTaskParams[0].height;
+            String color = myTaskParams[0].color;
             try {
                 URL url = new URL(urldisplay);
                 bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-             Util.encodeAndSaveFile(getApplicationContext(), bmp, filename);
-            return  null;
+            Util.encodeAndSaveFile(getApplicationContext(), bmp, filename);
+            mImageViewModel.insert(new Image(urldisplay, width, height, color));
+            return null;
         }
     }
 }
