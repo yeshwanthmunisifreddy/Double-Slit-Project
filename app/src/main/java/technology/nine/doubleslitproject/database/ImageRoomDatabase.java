@@ -1,11 +1,12 @@
-package technology.nine.doubleslitproject;
+package technology.nine.doubleslitproject.database;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
-import technology.nine.doubleslitproject.model.Image;
+import technology.nine.doubleslitproject.dao.ImageDao;
+import technology.nine.doubleslitproject.entity.Image;
 
 @Database(entities = {Image.class}, version = 1)
 public abstract class ImageRoomDatabase extends RoomDatabase {
@@ -13,12 +14,13 @@ public abstract class ImageRoomDatabase extends RoomDatabase {
 
     private static volatile ImageRoomDatabase INSTANCE;
 
-    static ImageRoomDatabase getDatabase(final Context context) {
+     public  static ImageRoomDatabase getDatabase(final Context context) {
         if (INSTANCE == null){
             synchronized (ImageRoomDatabase.class){
                 if (INSTANCE == null){
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             ImageRoomDatabase.class, "image_database")
+                            .allowMainThreadQueries()
                             .build();
                 }
             }

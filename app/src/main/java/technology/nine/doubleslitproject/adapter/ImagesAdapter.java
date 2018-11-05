@@ -1,13 +1,10 @@
-package technology.nine.doubleslitproject;
+package technology.nine.doubleslitproject.adapter;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -15,12 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import technology.nine.doubleslitproject.model.Image;
+import technology.nine.doubleslitproject.GlideApp;
+import technology.nine.doubleslitproject.R;
+import technology.nine.doubleslitproject.entity.Image;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.MyViewHolder> {
     private  Context context;
@@ -72,7 +69,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.MyViewHold
           colorAnimation.start();
       }
     }
-    void setWords(List<Image> words) {
+    public void setWords(List<Image> words) {
         mImages = words;
         notifyDataSetChanged();
     }

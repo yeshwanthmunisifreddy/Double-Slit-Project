@@ -1,4 +1,4 @@
-package technology.nine.doubleslitproject.model;
+package technology.nine.doubleslitproject.entity;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
 public class Image {
     @PrimaryKey
     @NonNull
-    @ColumnInfo(name = "image")
+    @ColumnInfo(name = "url")
     private String url;
     private int width;
     private int height;

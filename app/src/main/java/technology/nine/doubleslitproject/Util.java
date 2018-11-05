@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-class Util {
-    static void encodeAndSaveFile(Context context, Bitmap photo, String fileName) {
+public  class Util {
+   public static void encodeAndSaveFile(Context context, Bitmap photo, String fileName) {
         try {
             ContextWrapper contextWrapper = new ContextWrapper(context);
             File directory = contextWrapper.getDir("DoubleSlit", Context.MODE_PRIVATE);
@@ -75,7 +75,7 @@ class Util {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
-    static Bitmap decodeFile(Context context, String filename) {
+   public static Bitmap decodeFile(Context context, String filename) {
         KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
         Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
         ContextWrapper cw = new ContextWrapper(context);

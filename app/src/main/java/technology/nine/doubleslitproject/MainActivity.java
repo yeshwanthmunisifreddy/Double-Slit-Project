@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -37,13 +38,16 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import technology.nine.doubleslitproject.api.Client;
 import technology.nine.doubleslitproject.api.Service;
-import technology.nine.doubleslitproject.model.Image;
+import technology.nine.doubleslitproject.dao.ImageDao;
+import technology.nine.doubleslitproject.database.ImageRoomDatabase;
+import technology.nine.doubleslitproject.viewModel.ImageViewModel;
+import technology.nine.doubleslitproject.adapter.ImagesAdapter;
+import technology.nine.doubleslitproject.entity.Image;
 import technology.nine.doubleslitproject.model.Item;
 
 public class MainActivity extends AppCompatActivity {
 
     AlertDialog alert;
-    String filename;
     AlertDialog.Builder builder;
     private SharedPreferences permissionStatus;
     static final int EXTERNAL_STORAGE_PERMISSION_CONSTANT = 100;
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     ImagesAdapter imagesAdapter;
+    String filename;
 
     private ImageViewModel mImageViewModel;
 
@@ -268,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("StaticFieldLeak")
     private  class MyTask extends AsyncTask<MyTaskParams, Void, Void> {
-
+        ImageDao imageDao =ImageRoomDatabase.getDatabase(getApplicationContext()).imageDao();
         @Override
         protected Void doInBackground(MyTaskParams... myTaskParams) {
             String urldisplay = myTaskParams[0].url;
@@ -285,7 +290,15 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             Util.encodeAndSaveFile(getApplicationContext(), bmp, filename);
-            mImageViewModel.insert(new Image(urldisplay, width, height, color));
+            Image imageToUpdate =imageDao.findByName(urldisplay);
+          if (imageToUpdate == null){
+              Log.e("url","is not exist");
+              mImageViewModel.insert(new Image(urldisplay, width, height, color));
+          }
+          else {
+              Log.e("url","is exist");
+          }
+
             return null;
         }
     }

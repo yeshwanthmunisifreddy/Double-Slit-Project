@@ -1,4 +1,4 @@
-package technology.nine.doubleslitproject;
+package technology.nine.doubleslitproject.dao;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
@@ -7,7 +7,7 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
-import technology.nine.doubleslitproject.model.Image;
+import technology.nine.doubleslitproject.entity.Image;
 
 @Dao
 public interface ImageDao {
@@ -16,4 +16,9 @@ public interface ImageDao {
 
     @Query("SELECT * from Images_table")
     LiveData<List<Image>> getAllImages();
+
+    @Query("SELECT * from IMAGES_TABLE where url Like :url")
+    Image findByName(String url);
+
+
 }

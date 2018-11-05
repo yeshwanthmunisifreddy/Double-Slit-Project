@@ -1,4 +1,4 @@
-package technology.nine.doubleslitproject;
+package technology.nine.doubleslitproject.viewModel;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 
 import java.util.List;
 
-import technology.nine.doubleslitproject.model.Image;
+import technology.nine.doubleslitproject.entity.Image;
 
 public class ImageViewModel extends AndroidViewModel {
     private ImageRepository mImageRepository;
