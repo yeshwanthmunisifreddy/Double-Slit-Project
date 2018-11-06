@@ -7,18 +7,16 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
-import technology.nine.doubleslitproject.entity.Image;
 import technology.nine.doubleslitproject.entity.Videos;
 
 @Dao
-public interface ImageDao {
+public interface VideosDao {
     @Insert
-    void insert(Image image);
+    void insert(Videos videos);
 
-    @Query("SELECT * from Images_table")
-    LiveData<List<Image>> getAllImages();
+    @Query("SELECT * from Videos_table")
+    LiveData<List<Videos>> getAllIVideos();
 
-    @Query("SELECT * from IMAGES_TABLE where url Like :url")
-    Image findByName(String url);
-
+    @Query(" SELECT * FROM Videos_table where url LIKe :url")
+    Videos findByVideoName(String url);
 }

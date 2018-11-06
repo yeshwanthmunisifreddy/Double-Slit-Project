@@ -29,9 +29,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
-public  class Util {
-   public static void encodeAndSaveFile(Context context, Bitmap photo, String fileName) {
+import java.net.URL;
+
+public class Util {
+    public static void encodeAndSaveFile(Context context, Bitmap photo, String fileName) {
         try {
             ContextWrapper contextWrapper = new ContextWrapper(context);
             File directory = contextWrapper.getDir("DoubleSlit", Context.MODE_PRIVATE);
@@ -75,7 +79,7 @@ public  class Util {
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
-   public static Bitmap decodeFile(Context context, String filename) {
+    public static Bitmap decodeFile(Context context, String filename) {
         KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
         Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
         ContextWrapper cw = new ContextWrapper(context);
@@ -85,8 +89,8 @@ public  class Util {
         Bitmap bitmap = null;
         try {
             if (file.exists()) {
-              uri = Uri.fromFile(file);
-                Log.e("Uri",uri+"");
+                uri = Uri.fromFile(file);
+                Log.e("Uri", uri + "");
                 FileInputStream fileInputStream = new FileInputStream(file);
                 InputStream inputStream = crypto.getMacInputStream(fileInputStream, Entity.create("entity_id"));
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -98,15 +102,16 @@ public  class Util {
                 fileInputStream.close();
                 bitmap = bytesToBitmap(byteArrayOutputStream.toByteArray());
                 Log.e("Bitmap", bitmap + "");
-                String name = getFileName(context,uri);
-                Log.e("Name",name+"");
+                String name = getFileName(context, uri);
+                Log.e("Name", name + "");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return bitmap ;
+        return bitmap;
     }
-    public static String getFileName(Context context, Uri uri) {
+
+    private static String getFileName(Context context, Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
             Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
@@ -129,7 +134,7 @@ public  class Util {
         return result;
     }
 
-    public static Uri getFileUri(Context context,String fileName){
+    public static Uri getFileUri(Context context, String fileName) {
         ContextWrapper cw = new ContextWrapper(context);
         File directory = cw.getDir("DoubleSlit", Context.MODE_PRIVATE);
         File file = new File(directory, fileName);
@@ -137,6 +142,66 @@ public  class Util {
         if (file.exists()) {
             uri = Uri.fromFile(file);
         }
-        return  uri;
+        return uri;
+    }
+
+    public static void encodeAndSaveVideoFile(Context context, String url, String fileName) {
+        try {
+            ContextWrapper contextWrapper = new ContextWrapper(context);
+            File directory = contextWrapper.getDir("DoubleSlitVideos", Context.MODE_PRIVATE);
+            File myPath = new File(directory, fileName);
+            KeyChain keyChain = new SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256);
+            Crypto crypto = AndroidConceal.get().createDefaultCrypto(keyChain);
+            if (!crypto.isAvailable()) {
+                return;
+            }
+            if (!myPath.exists()) {
+                OutputStream fileStream = new BufferedOutputStream(
+                        new FileOutputStream(myPath));
+                OutputStream outputStream = crypto.getMacOutputStream(
+                        fileStream,
+                        Entity.create("entity_id"));
+                outputStream.write(convertVideoToByte(context, url));
+                outputStream.close();
+            }
+
+        } catch (KeyChainException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (CryptoInitializationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static byte[] convertVideoToByte(Context ctx, String ulrs) {
+        byte[] byteArray = null;
+        try {
+            URL uri = new URL(ulrs);
+            HttpURLConnection conn = (HttpURLConnection) uri.openConnection();
+            conn.connect();
+            InputStream inputStream = conn.getInputStream();
+            try {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] b = new byte[1024 * 8];
+                int bytesRead = 0;
+
+                while ((bytesRead = inputStream.read(b)) != -1) {
+                    bos.write(b, 0, bytesRead);
+                }
+                byteArray = bos.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException ea) {
+            ea.printStackTrace();
+        } catch (MalformedURLException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return byteArray;
     }
 }

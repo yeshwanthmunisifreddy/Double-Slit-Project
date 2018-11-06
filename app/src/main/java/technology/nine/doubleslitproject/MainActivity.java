@@ -1,49 +1,27 @@
 package technology.nine.doubleslitproject;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.facebook.soloader.SoLoader;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import technology.nine.doubleslitproject.api.Client;
-import technology.nine.doubleslitproject.api.Service;
-import technology.nine.doubleslitproject.dao.ImageDao;
-import technology.nine.doubleslitproject.database.ImageRoomDatabase;
-import technology.nine.doubleslitproject.viewModel.ImageViewModel;
-import technology.nine.doubleslitproject.adapter.ImagesAdapter;
-import technology.nine.doubleslitproject.entity.Image;
-import technology.nine.doubleslitproject.model.Item;
+import technology.nine.doubleslitproject.adapter.ViewPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,81 +31,26 @@ public class MainActivity extends AppCompatActivity {
     static final int EXTERNAL_STORAGE_PERMISSION_CONSTANT = 100;
     private static final int REQUEST_PERMISSION_SETTING = 101;
     boolean sentToSettings = false;
-    Bitmap bmp = null;
     String id;
-
-    RecyclerView recyclerView;
-    ImagesAdapter imagesAdapter;
-    String filename;
-
-    private ImageViewModel mImageViewModel;
-
+    ActionBar actionBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_image);
-
+        setContentView(R.layout.activity_main);
         //initializing the conceal library
         SoLoader.init(this, false);
+        ViewPager viewPager = findViewById(R.id.view_pager);
+        viewPager.setOffscreenPageLimit(3);
+        ViewPagerAdapter pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pageAdapter);
+        TabLayout tabLayout =  findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(viewPager);
         permissionStatus = getSharedPreferences("permissionStatus", MODE_PRIVATE);
         permissions();
-        recyclerView = findViewById(R.id.recycler_view);
-        imagesAdapter = new ImagesAdapter(this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(imagesAdapter);
-
-        mImageViewModel = ViewModelProviders.of(this).get(ImageViewModel.class);
-        mImageViewModel.getAllImages().observe(this, new android.arch.lifecycle.Observer<List<Image>>() {
-            @Override
-            public void onChanged(@Nullable List<Image> images) {
-                imagesAdapter.setWords(images);
-            }
-        });
 
     }
 
-    private void fetch() {
-        Service apiService = Client.getRetrofit(getApplicationContext()).create(Service.class);
-        apiService.getItems("9537c083326dcc052deccb63fdd7ba197a7f249b96f3eed6a6fd7d24a83b9b6b", 1)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<Item>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
 
-                    @Override
-                    public void onNext(List<Item> value) {
-                        if (value != null) {
-                            for (int i = 0; i < value.size() - 1; i++) {
-                                String url = value.get(i).getUrls().getFull();
-                                filename = value.get(i).getId();
-                                int width = (int) value.get(i).getWidth();
-                                int height = (int) value.get(i).getHeight();
-                                String color = value.get(i).getColor();
-                                MyTaskParams params = new MyTaskParams(url, filename, width, height, color);
-                                MyTask myTask = new MyTask();
-                                myTask.execute(params);
-                            }
-
-                        }
-
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-
-
-    }
 
     private void permissions() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -191,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(Manifest.permission.WRITE_EXTERNAL_STORAGE, true);
             editor.apply();
         } else {
-            fetch();
+
         }
     }
 
@@ -201,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == EXTERNAL_STORAGE_PERMISSION_CONSTANT) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 //The External Storage Write Permission is granted to you... Continue your left job...
-                fetch();
+
             } else {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     //Show Information about why you need the permission
@@ -238,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_PERMISSION_SETTING) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 //Got Permission
-                fetch();
             }
         }
     }
@@ -250,56 +172,9 @@ public class MainActivity extends AppCompatActivity {
         if (sentToSettings) {
             if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 //Got Permission
-                fetch();
+
             }
-        }
-    }
-
-    private class MyTaskParams {
-        String url;
-        String filename;
-        int width;
-        int height;
-        String color;
-
-        MyTaskParams(String url, String filename, int width, int height, String color) {
-            this.url = url;
-            this.filename = filename;
-            this.width = width;
-            this.height = height;
-            this.color = color;
-        }
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private  class MyTask extends AsyncTask<MyTaskParams, Void, Void> {
-        ImageDao imageDao =ImageRoomDatabase.getDatabase(getApplicationContext()).imageDao();
-        @Override
-        protected Void doInBackground(MyTaskParams... myTaskParams) {
-            String urldisplay = myTaskParams[0].url;
-            String filename = myTaskParams[0].filename;
-            int width = myTaskParams[0].width;
-            int height = myTaskParams[0].height;
-            String color = myTaskParams[0].color;
-            try {
-                URL url = new URL(urldisplay);
-                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Util.encodeAndSaveFile(getApplicationContext(), bmp, filename);
-            Image imageToUpdate =imageDao.findByName(urldisplay);
-          if (imageToUpdate == null){
-              Log.e("url","is not exist");
-              mImageViewModel.insert(new Image(urldisplay, width, height, color));
-          }
-          else {
-              Log.e("url","is exist");
-          }
-
-            return null;
         }
     }
 }
+

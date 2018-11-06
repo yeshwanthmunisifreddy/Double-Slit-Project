@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +24,6 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import technology.nine.doubleslitproject.MainActivity;
 import technology.nine.doubleslitproject.R;
 import technology.nine.doubleslitproject.Util;
 import technology.nine.doubleslitproject.adapter.ImagesAdapter;
@@ -39,18 +37,15 @@ import technology.nine.doubleslitproject.viewModel.ImageViewModel;
 
 public class ImageFragment extends Fragment {
     Bitmap bmp = null;
-    String id;
-
     RecyclerView recyclerView;
     ImagesAdapter imagesAdapter;
     String filename;
-
     private ImageViewModel mImageViewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_image,container,false);
+        View view = inflater.inflate(R.layout.recyclerview,container,false);
         recyclerView = view.findViewById(R.id.recycler_view);
         imagesAdapter = new ImagesAdapter(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -143,14 +138,11 @@ public class ImageFragment extends Fragment {
                 e.printStackTrace();
             }
             Util.encodeAndSaveFile(getContext(), bmp, filename);
-            Image imageToUpdate =imageDao.findByName(urldisplay);
+            Image imageToUpdate = imageDao.findByName(urldisplay);
             if (imageToUpdate == null){
-                Log.e("url","is not exist");
                 mImageViewModel.insert(new Image(urldisplay, width, height, color));
             }
-            else {
-                Log.e("url","is exist");
-            }
+
 
             return null;
         }

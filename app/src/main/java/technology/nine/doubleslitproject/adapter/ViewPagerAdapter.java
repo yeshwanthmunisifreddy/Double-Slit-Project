@@ -10,8 +10,8 @@ import technology.nine.doubleslitproject.fragments.AudioFragment;
 import technology.nine.doubleslitproject.fragments.ImageFragment;
 import technology.nine.doubleslitproject.fragments.VideoFragment;
 
-public class ViewPagerDapter extends FragmentStatePagerAdapter {
-    public ViewPagerDapter(FragmentManager fm) {
+public class ViewPagerAdapter extends FragmentStatePagerAdapter {
+    public ViewPagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
