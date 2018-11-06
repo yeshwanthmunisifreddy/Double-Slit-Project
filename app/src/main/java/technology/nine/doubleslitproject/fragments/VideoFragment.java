@@ -61,6 +61,7 @@ public class VideoFragment extends Fragment {
         videoAdapter = new VideoAdapter(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(videoAdapter);
+        recyclerView.setHasFixedSize(true);
         mImageViewModel = ViewModelProviders.of(this).get(ImageViewModel.class);
         mImageViewModel.getAllVideos().observe(this, new android.arch.lifecycle.Observer<List<Videos>>() {
             @Override
@@ -115,7 +116,7 @@ public class VideoFragment extends Fragment {
 
     }
 
-    private class DownloadVideoTask extends AsyncTask<String, Void, Void> {
+    private  class DownloadVideoTask extends AsyncTask<String, Void, Void> {
         Bitmap bmp;
 
         @Override

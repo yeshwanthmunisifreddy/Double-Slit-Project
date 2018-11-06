@@ -15,7 +15,6 @@ import java.util.List;
 
 import technology.nine.doubleslitproject.GlideApp;
 import technology.nine.doubleslitproject.R;
-import technology.nine.doubleslitproject.entity.Image;
 import technology.nine.doubleslitproject.entity.Videos;
 
 public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder> {
@@ -35,7 +34,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int i) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, int i) {
         if (videos != null){
             String thumbnail = videos.get(i).getThumbnail();
             String id  = videos.get(i).getId();
@@ -45,6 +44,15 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
                     .load(thumbnail)
                     .into(holder.imageView);
             holder.textView.setText(title);
+            holder.imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (holder.imageView.getDrawable() != null){
+
+
+                    }
+                }
+            });
         }
     }
 
