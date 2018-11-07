@@ -1,6 +1,8 @@
 package technology.nine.doubleslitproject.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,9 +12,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.youtube.player.YouTubeStandalonePlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import technology.nine.doubleslitproject.Config;
 import technology.nine.doubleslitproject.GlideApp;
 import technology.nine.doubleslitproject.R;
 import technology.nine.doubleslitproject.entity.Videos;
@@ -37,8 +42,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int i) {
         if (videos != null){
             String thumbnail = videos.get(i).getThumbnail();
-            String id  = videos.get(i).getId();
-            String url = videos.get(i).getUrl();
+            final String id  = videos.get(i).getId();
+            final String url = videos.get(i).getUrl();
             String title = videos.get(i).getTitle();
             GlideApp.with(context)
                     .load(thumbnail)
@@ -48,6 +53,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
                 @Override
                 public void onClick(View v) {
                     if (holder.imageView.getDrawable() != null){
+                       Intent intent = YouTubeStandalonePlayer.createVideoIntent((Activity) context,Config.YOUTUBE_API_KEY,id);
+                       context.startActivity(intent);
 
 
                     }

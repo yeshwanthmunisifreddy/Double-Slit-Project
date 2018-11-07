@@ -48,4 +48,9 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:$rootProject.archLifecycleVersion"
     annotationProcessor "android.arch.lifecycle:compiler:$rootProject.archLifecycleVersion"
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
+    //exoplayer
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.7.3'
+    implementation 'com.google.android.exoplayer:exoplayer-dash:2.7.3'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.7.3'
+
 }
