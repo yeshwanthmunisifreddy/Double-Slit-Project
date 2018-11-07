@@ -49,7 +49,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
                     .load(thumbnail)
                     .into(holder.imageView);
             holder.textView.setText(title);
-            holder.imageView.setOnClickListener(new View.OnClickListener() {
+            holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (holder.imageView.getDrawable() != null){
@@ -68,11 +68,11 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.MyViewHolder
         return videos.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+    class MyViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout relativeLayout;
         ImageView imageView;
         TextView textView;
-        public MyViewHolder(@NonNull View itemView) {
+        MyViewHolder(@NonNull View itemView) {
             super(itemView);
             relativeLayout = itemView.findViewById(R.id.video_relative_layout);
             imageView = itemView.findViewById(R.id.youtube_thumbnail);
