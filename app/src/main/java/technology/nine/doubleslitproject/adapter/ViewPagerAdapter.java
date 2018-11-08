@@ -23,15 +23,13 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
         if (i == 1){
             return  new VideoFragment();
         }
-        if (i == 2){
-            return  new AudioFragment();
-        }
+
             return null;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return 2 ;
     }
 
     @Nullable
@@ -42,9 +40,6 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
         }
         if (position == 1){
             return  "Videos";
-        }
-        if (position == 2){
-            return  "Audio";
         }
         return  null;
     }
